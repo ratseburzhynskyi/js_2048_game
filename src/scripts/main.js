@@ -3,6 +3,7 @@
 // Uncomment the next lines to use your game instance in the browser
 // const Game = require('../modules/Game.class');
 // const game = new Game();
+const MAX_ROW_COL_LENGTH = 3;
 
 class Game {
   constructor(initialState = null) {
@@ -35,10 +36,10 @@ class Game {
   addRandomTile() {
     const emptyCells = [];
 
-    for (let r = 0; r < 4; r++) {
-      for (let c = 0; c < 4; c++) {
-        if (this.board[r][c] === 0) {
-          emptyCells.push({ row: r, col: c });
+    for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
+      for (let colIndex = 0; colIndex < 4; colIndex++) {
+        if (this.board[rowIndex][colIndex] === 0) {
+          emptyCells.push({ row: rowIndex, col: colIndex });
         }
       }
     }
@@ -85,15 +86,15 @@ class Game {
   moveLeft() {
     let moved = false;
 
-    for (let r = 0; r < this.board.length; r++) {
-      const row = this.board[r];
+    for (let rowIndex = 0; rowIndex < this.board.length; rowIndex++) {
+      const row = this.board[rowIndex];
       const newRow = this.processRowLeft(row);
 
       if (row.join() !== newRow.join()) {
         moved = true;
       }
 
-      this.board[r] = newRow;
+      this.board[rowIndex] = newRow;
     }
 
     if (moved) {
@@ -125,8 +126,8 @@ class Game {
   moveRight() {
     let moved = false;
 
-    for (let r = 0; r < this.board.length; r++) {
-      const row = this.board[r];
+    for (let rowIndex = 0; rowIndex < this.board.length; rowIndex++) {
+      const row = this.board[rowIndex];
 
       const reversed = row.slice().reverse();
       const processed = this.processRowLeft(reversed);
@@ -136,7 +137,7 @@ class Game {
         moved = true;
       }
 
-      this.board[r] = finalRow;
+      this.board[rowIndex] = finalRow;
     }
 
     if (moved) {
@@ -164,11 +165,11 @@ class Game {
   transpose() {
     const newBoard = [];
 
-    for (let c = 0; c < 4; c++) {
-      newBoard[c] = [];
+    for (let colIndex = 0; colIndex < 4; colIndex++) {
+      newBoard[colIndex] = [];
 
-      for (let r = 0; r < 4; r++) {
-        newBoard[c][r] = this.board[r][c];
+      for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
+        newBoard[colIndex][rowIndex] = this.board[rowIndex][colIndex];
       }
     }
 
@@ -190,13 +191,19 @@ class Game {
       return false;
     }
 
-    for (let r = 0; r < 4; r++) {
-      for (let c = 0; c < 4; c++) {
-        if (c < 3 && this.board[r][c] === this.board[r][c + 1]) {
+    for (let rowIndex = 0; rowIndex < 4; rowIndex++) {
+      for (let colIndex = 0; colIndex < 4; colIndex++) {
+        if (
+          colIndex < MAX_ROW_COL_LENGTH &&
+          this.board[rowIndex][colIndex] === this.board[rowIndex][colIndex + 1]
+        ) {
           return false;
         }
 
-        if (r < 3 && this.board[r][c] === this.board[r + 1][c]) {
+        if (
+          rowIndex < MAX_ROW_COL_LENGTH &&
+          this.board[rowIndex][colIndex] === this.board[rowIndex + 1][colIndex]
+        ) {
           return false;
         }
       }
@@ -216,9 +223,8 @@ class Game {
   }
 }
 
-// === Ініціалізація гри ===
 const game = new Game();
-// Селектори
+
 const boardEl = document.querySelector('.game-field tbody');
 const scoreEl = document.querySelector('.game-score');
 const msgWin = document.querySelector('.message-win');
@@ -229,28 +235,26 @@ const restartBtn = document.querySelector('.restart');
 
 restartBtn.hidden = true;
 
-// === Рендер дошки ===
 function renderBoard() {
   const state = game.getState();
   const rows = boardEl.querySelectorAll('tr');
 
-  rows.forEach((tr, r) => {
+  rows.forEach((tr, rowIndex) => {
     const cells = tr.querySelectorAll('td');
 
-    cells.forEach((td, c) => {
-      td.textContent = state[r][c] === 0 ? '' : state[r][c];
+    cells.forEach((td, colIndex) => {
+      td.textContent =
+        state[rowIndex][colIndex] === 0 ? '' : state[rowIndex][colIndex];
       td.className = 'field-cell';
 
-      if (state[r][c] > 0) {
-        td.classList.add(`field-cell--${state[r][c]}`);
+      if (state[rowIndex][colIndex] > 0) {
+        td.classList.add(`field-cell--${state[rowIndex][colIndex]}`);
       }
     });
   });
 
-  // рахунок
   scoreEl.textContent = game.getScore();
 
-  // повідомлення
   if (game.getStatus() === 'win') {
     msgWin.classList.remove('hidden');
     msgLose.classList.add('hidden');
@@ -266,7 +270,6 @@ function renderBoard() {
   }
 }
 
-// === Клавіатура ===
 document.addEventListener('keydown', (e) => {
   if (game.getStatus() !== 'playing') {
     return;
@@ -291,17 +294,14 @@ document.addEventListener('keydown', (e) => {
   renderBoard();
 });
 
-// === Кнопка Start ===
 startBtn.addEventListener('click', () => {
   game.start();
   renderBoard();
 });
 
-// === Кнопка Restart ===
 restartBtn.addEventListener('click', () => {
   game.restart();
   renderBoard();
 });
 
-// === Початковий рендер ===
 renderBoard();
