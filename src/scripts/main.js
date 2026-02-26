@@ -58,6 +58,11 @@ class Game {
       return;
     }
 
+    startBtn.hidden = true;
+    restartBtn.hidden = false;
+
+    msgStart.hidden = true;
+
     this.status = 'playing';
 
     this.addRandomTile();
@@ -221,6 +226,8 @@ const msgLose = document.querySelector('.message-lose');
 const msgStart = document.querySelector('.message-start');
 const startBtn = document.querySelector('.start');
 const restartBtn = document.querySelector('.restart');
+
+restartBtn.hidden = true;
 
 // === Рендер дошки ===
 function renderBoard() {
